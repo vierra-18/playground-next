@@ -36,12 +36,14 @@ type ModalProps = {
 	size?: Size;
 	primaryAction?: {
 		label: string;
-		close?: boolean;
 		onClick: () => void;
 	};
 	secondaryAction?: {
 		label: string;
-		close?: boolean;
+		onClick: () => void;
+	};
+	altAction?: {
+		label: string;
 		onClick: () => void;
 	};
 	children: React.ReactNode;
@@ -54,6 +56,7 @@ export default function Modal({
 	size = "default",
 	primaryAction,
 	secondaryAction,
+	altAction,
 	children,
 }: ModalProps) {
 	return (
@@ -87,32 +90,47 @@ export default function Modal({
 			<div className="flex-1 p-6">{children}</div>
 
 			{(primaryAction || secondaryAction) && (
-				<div className="flex h-[3.75rem] w-full justify-end gap-1 rounded-b-lg px-6">
-					{secondaryAction && (
-						<Button
-							variant="outline"
-							className="capitalize"
-							onClick={() => {
-								secondaryAction.onClick();
-								secondaryAction.close && onClose();
-							}}
-						>
-							{secondaryAction.label}
-						</Button>
-					)}
-					{primaryAction && (
-						<Button
-							variant="solid"
-							intent={intent}
-							className="capitalize"
-							onClick={() => {
-								primaryAction.onClick();
-								primaryAction.close && onClose();
-							}}
-						>
-							{primaryAction.label}
-						</Button>
-					)}
+				<div className=" flex h-[3.75rem] w-full px-6">
+					<div className="flex-1">
+						{" "}
+						{altAction && (
+							<Button
+								variant="text"
+								intent={intent}
+								className="capitalize p-0 [&_span]:mx-0 hover:bg-transparent"
+								onClick={() => {
+									altAction.onClick();
+								}}
+							>
+								{altAction.label}
+							</Button>
+						)}
+					</div>
+					<div className="flex gap-1 justify-self-end ">
+						{secondaryAction && (
+							<Button
+								variant="outline"
+								className="capitalize"
+								onClick={() => {
+									secondaryAction.onClick();
+								}}
+							>
+								{secondaryAction.label}
+							</Button>
+						)}
+						{primaryAction && (
+							<Button
+								variant="solid"
+								intent={intent}
+								className="capitalize"
+								onClick={() => {
+									primaryAction.onClick();
+								}}
+							>
+								{primaryAction.label}
+							</Button>
+						)}
+					</div>
 				</div>
 			)}
 		</div>

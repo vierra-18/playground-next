@@ -1,5 +1,5 @@
-import React, { ReactElement } from "react";
-import { IconType } from "react-icons";
+import React, { type ReactElement } from "react";
+import type { IconType } from "react-icons";
 
 type Icon = IconType | ReactElement;
 

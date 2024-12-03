@@ -5,8 +5,9 @@ import Dashboard from "./components/layout/Dashboard";
 export default function Home() {
 	return (
 		<div className="min-h-screen max-w-screen bg-purple-800/10">
-			<main className="grid h-full w-full place-items-center">
-				<div className="container flex h-full flex-col items-center justify-center ">
+			<main className="grid h-full w-full place-items-start">
+				<div className="h-16 absolute top-0 bg-zinc-800 w-full z-0" />
+				<div className="flex h-full w-full flex-col items-center justify-center lg:container ">
 					{/* <Sidebar /> */}
 					<Dashboard />
 				</div>

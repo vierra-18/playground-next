@@ -61,15 +61,11 @@ export default function Dashboard() {
 	};
 
 	return (
-		<div className=" flex min-h-screen w-full">
-			{/* <Sidebar
-				notes={notes}
-				onEditNote={handleEditNote}
-				onNewNote={handleNewNote}
-			/> */}
-			<div className="flex min-h-full w-full flex-col border-black border-l">
+		<div className=" flex min-h-screen w-full ">
+			<Sidebar />
+			<div className="flex min-h-full w-full flex-col">
 				<Topbar />
-				<div className="p-6 ">
+				<div className="w-full p-6">
 					{/* <NoteForm
 						key={editingNote ? editingNote.id : "new"} // Add key to force re-render
 						onAddNote={addNote}

@@ -21,8 +21,7 @@ export default {
 				"brand-700": "var(--brand-700)",
 				"brand-800": "var(--brand-800)",
 				"brand-900": "var(--brand-900)",
-				"brand-1000": "var(--brand-1000)",
-				"brand-1100": "var(--brand-1100)",
+				"brand-950": "var(--brand-950)",
 
 				"blue-50": "var(--blue-50)",
 				"blue-100": "var(--blue-100)",
@@ -34,8 +33,7 @@ export default {
 				"blue-700": "var(--blue-700)",
 				"blue-800": "var(--blue-800)",
 				"blue-900": "var(--blue-900)",
-				"blue-1000": "var(--blue-1000)",
-				"blue-1100": "var(--blue-1100)",
+				"blue-950": "var(--blue-950)",
 
 				"green-50": "var(--green-50)",
 				"green-100": "var(--green-100)",
@@ -47,8 +45,7 @@ export default {
 				"green-700": "var(--green-700)",
 				"green-800": "var(--green-800)",
 				"green-900": "var(--green-900)",
-				"green-1000": "var(--green-1000)",
-				"green-1100": "var(--green-1100)",
+				"green-950": "var(--green-950)",
 
 				"yellow-50": "var(--yellow-50)",
 				"yellow-100": "var(--yellow-100)",
@@ -60,8 +57,7 @@ export default {
 				"yellow-700": "var(--yellow-700)",
 				"yellow-800": "var(--yellow-800)",
 				"yellow-900": "var(--yellow-900)",
-				"yellow-1000": "var(--yellow-1000)",
-				"yellow-1100": "var(--yellow-1100)",
+				"yellow-950": "var(--yellow-950)",
 
 				"red-50": "var(--red-50)",
 				"red-100": "var(--red-100)",
@@ -73,8 +69,7 @@ export default {
 				"red-700": "var(--red-700)",
 				"red-800": "var(--red-800)",
 				"red-900": "var(--red-900)",
-				"red-1000": "var(--red-1000)",
-				"red-1100": "var(--red-1100)",
+				"red-950": "var(--red-950)",
 
 				"black-50": "var(--black-50)",
 				"black-100": "var(--black-100)",
@@ -86,8 +81,7 @@ export default {
 				"black-700": "var(--black-700)",
 				"black-800": "var(--black-800)",
 				"black-900": "var(--black-900)",
-				"black-1000": "var(--black-1000)",
-				"black-1100": "var(--black-1100)",
+				"black-950": "var(--black-950)",
 
 				"white-50": "var(--white-50)",
 				"white-100": "var(--white-100)",
@@ -99,13 +93,12 @@ export default {
 				"white-700": "var(--white-700)",
 				"white-800": "var(--white-800)",
 				"white-900": "var(--white-900)",
-				"white-1000": "var(--white-1000)",
-				"white-1100": "var(--white-1100)",
+				"white-950": "var(--white-950)",
 
 				icon: {
 					DEFAULT: "var(--black-800)",
 					inverse: "var(--white-200)",
-					subtle: "var(--white-1100)",
+					subtle: "var(--white-950)",
 					disabled: "var(--white-700)",
 					brand: "var(--brand-700)",
 					info: "var(--blue-700)",
@@ -261,7 +254,7 @@ export default {
 			textColor: {
 				DEFAULT: "var(--black-800)",
 				inverse: "var(--white-200)",
-				subtle: "var(--white-1100)",
+				subtle: "var(--white-950)",
 				placeholder: "var(--white-800)",
 				disabled: "var(--white-700)",
 				brand: "var(--brand-700)",
@@ -480,10 +473,95 @@ export default {
 					"var(--leading-caption-loose)",
 				],
 			},
+			keyframes: {
+				"fade-in": {
+					from: {
+						opacity: "0",
+					},
+					to: {
+						opacity: "1",
+					},
+				},
+				"fade-out": {
+					from: {
+						opacity: "1",
+					},
+					to: {
+						opacity: "0",
+					},
+				},
+				"zoom-in": {
+					from: {
+						opacity: "0",
+						transform: "scale(0.95)",
+					},
+					to: {
+						opacity: "1",
+						transform: "scale(1)",
+					},
+				},
+				"zoom-out": {
+					from: {
+						opacity: "1",
+						transform: "scale(1)",
+					},
+					to: {
+						opacity: "0",
+						transform: "scale(0.95)",
+					},
+				},
+				"slide-in-from-top": {
+					from: {
+						opacity: "0",
+						transform: "translateY(-0.5rem)",
+					},
+					to: {
+						opacity: "1",
+						transform: "translateY(0)",
+					},
+				},
+				"slide-in-from-bottom": {
+					from: {
+						opacity: "0",
+						transform: "translateY(0.5rem)",
+					},
+					to: {
+						opacity: "1",
+						transform: "translateY(0)",
+					},
+				},
+				"slide-in-from-right": {
+					from: {
+						opacity: "0",
+						transform: "translateX(0.5rem)",
+					},
+					to: {
+						opacity: "1",
+						transform: "translateX(0)",
+					},
+				},
+				"slide-in-from-left": {
+					from: {
+						opacity: "0",
+						transform: "translateX(-0.5rem)",
+					},
+					to: {
+						opacity: "1",
+						transform: "translateX(0)",
+					},
+				},
+			},
+			animation: {
+				"slide-bottom": "slide-in-from-top 0.2s ease-out",
+				"slide-top": "slide-in-from-bottom 0.2s ease-out",
+				"slide-right": "slide-in-from-left 0.2s ease-out",
+				"slide-left": "slide-in-from-right 0.2s ease-out",
+				"fade-in": "fade-in 0.2s ease-out",
+				"zoom-in": "zoom-in 0.2s ease-out",
+			},
 		},
 	},
 	plugins: [
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		function ({ addUtilities }: any) {
 			const newUtilities = {
 				".show-guide": {

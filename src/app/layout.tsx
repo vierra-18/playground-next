@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 // import localFont from "next/font/local";
 import "./globals.css";
-import { AlertProvider } from "./components/multiverse/Alert";
+import { AlertProvider } from "./components/multiverse/Toast";
 import { MultiverseProvider } from "./components/multiverse/MultiverseProvider";
 import ModalProvider from "./components/multiverse/ModalProvider";
 import OverlayProvider from "./components/multiverse/OverlayProvider";

@@ -1,0 +1,17 @@
+@keyframes scaleDown {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+.toast-container span.timer.isAnimating {
+  transform-origin: left;
+  animation: scaleDown var(--animation-duration, 0.5s) forwards; /* Use CSS variable for duration */
+}
+.toast-container span.timer {
+  transform-origin: left;
+  @apply scale-x-0;
+}

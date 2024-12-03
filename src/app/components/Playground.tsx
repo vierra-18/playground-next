@@ -1,411 +1,464 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
+
+import { HiArchive, HiBookmark } from "react-icons/hi";
+import { FaCreditCard, FaRegCreditCard, FaWifi } from "react-icons/fa";
+import { RiCoinLine, RiPaypalLine } from "react-icons/ri";
+
+import Radio from "./multiverse/RadioButton";
+import Checkbox from "./multiverse/Checkbox";
+import Tooltip from "./multiverse/Tooltip";
+import Card from "./multiverse/Card";
+import Accordion from "./multiverse/Accordion";
+import useToast from "./multiverse/Toast";
 import Button from "./multiverse/Button";
-
-import { MdOutlineBarChart, MdOutlineMultilineChart } from "react-icons/md";
-import { RiInformationFill } from "react-icons/ri";
-import Modal from "./multiverse/Modal";
-import Note from "./multiverse/Note";
-import StatCard from "./multiverse/StatCard";
-
-import {
-	AreaChart,
-	Area,
-	ResponsiveContainer,
-	XAxis,
-	YAxis,
-	Tooltip,
-} from "recharts";
+import FormRadio from "./multiverse/FormRadio";
 import useCreateOverlay from "./multiverse/useCreateOverlay";
-import Drawer from "./multiverse/Drawer";
-/**
- * Utility function to generate random word and index
- * Used for demonstration of dynamic modal content updates
- */
-function getRandomWord() {
-	const words = ["Phoenix", "Galaxy", "Nimbus" /* ... */];
-	const index = Math.floor(Math.random() * words.length);
-	return { word: words[index], index };
-}
+import Modal from "./multiverse/Modal";
 
-/**
- * Dummy data for the tiny line chart
- */
-const chartData = [
-	{ name: "Jan", value: 40 },
-	{ name: "Feb", value: 30 },
-	{ name: "Mar", value: 20 },
-	{ name: "Apr", value: 27 },
-	{ name: "May", value: 18 },
-	{ name: "Jun", value: 23 },
-	{ name: "Jul", value: 34 },
-];
+// Zod schemas
+const paymentSchema = z.object({
+	payment: z.enum(["credit", "debit", "paypal", "crypto"]),
+});
 
-/**
- * Main playground content demonstrating modal functionality
- * Shows different ways to create and manage modals with dynamic content
- */
+const notificationsSchema = z.object({
+	notifications: z.array(z.enum(["email", "sms", "push", "whatsapp"])),
+});
+
 function PlaygroundContent() {
-	// Main state for dynamic content updates
-	const [data, setData] = useState({ id: 0, name: "Phoenix", counter: 0 });
-	// Separate counter state (consider removing if not needed)
-	// biome-ignore lint/correctness/noUnusedVariables: <explanation>
-	const [counter, setCounter] = useState(0);
+	// Single selection state
+	const [selectedPayment, setSelectedPayment] = useState<string>("");
 
-	/**
-	 * Setup intervals for dynamic content updates
-	 * - Counter updates every second
-	 * - Name updates every 5 seconds
-	 */
-	useEffect(() => {
-		// Update counter every second
-		const counterInterval = setInterval(() => {
-			setData((prev) => ({ ...prev, counter: prev.counter + 1 }));
-		}, 1000);
+	// Multiple selection state for notifications
+	const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
+		[]
+	);
 
-		// Update name and ID every 5 seconds
-		const nameInterval = setInterval(() => {
-			const { word, index } = getRandomWord();
-			setData((prev) => ({ ...prev, name: word, id: index }));
-		}, 5000);
+	// Error state
+	const [errors, setErrors] = useState<{
+		payment?: string;
+		notifications?: string;
+	}>({});
 
-		// Cleanup intervals on component unmount
-		return () => {
-			clearInterval(counterInterval);
-			clearInterval(nameInterval);
-		};
-	}, []);
+	// Example data for payment methods
+	const paymentMethods = [
+		{
+			value: "credit",
+			label: "Credit Card",
+			description: "Pay with Visa, Mastercard, or American Express",
+			icon: HiBookmark,
+		},
+		{
+			value: "debit",
+			label: "Debit Card",
+			description: "Direct payment from your bank account",
+			icon: FaRegCreditCard,
+		},
+		{
+			value: "paypal",
+			label: "PayPal",
+			description: "Pay using your PayPal account",
+			icon: RiPaypalLine,
+		},
+		{
+			value: "crypto",
+			label: "Cryptocurrency",
+			description: "Pay with Bitcoin, Ethereum, or other cryptocurrencies",
+			icon: RiCoinLine,
+		},
+	];
 
-	// Initialize modal creation with state to be observed
-	// Any changes to this state will trigger updates in all active modals using the hook
-	const createModal = useCreateOverlay({ data });
+	// Example data for notification preferences
+	const notificationPreferences = [
+		{
+			value: "email",
+			label: "Email",
+			description: "Receive notifications via email",
+			icon: HiArchive,
+		},
+		{
+			value: "sms",
+			label: "SMS",
+			description: "Receive notifications via SMS",
+			icon: FaCreditCard,
+		},
+		{
+			value: "push",
+			label: "Push Notifications",
+			description: "Receive push notifications",
+			icon: RiPaypalLine,
+		},
+		{
+			value: "whatsapp",
+			label: "WhatsApp",
+			description: "Receive notifications via WhatsApp",
+			icon: RiCoinLine,
+		},
+	];
+
 	const showModal = useCreateOverlay({});
-	/**
-	 - May observe unnecessary state changes
-	 - Less granular control over what each modal observes
-	 - Could lead to unnecessary re-renders if modals only need specific pieces of state
-	*/
-	// const showUserModal = useCreateModal({ user });
-	// const showCounterModal = useCreateModal({ counter });
-	// const showDataModal = useCreateModal({ data });
-	/**
-	- More precise control over what each modal observes
-  - Better performance when states update independently
-	- Clearer intent for each modal's purpose
-	- Easier to debug which state changes affect which modals
-	- Better code splitting potential
-	*/
 
-	/**
-	 * Modal opening handlers
-	 * Each handler creates a different type of modal with specific content and actions
-	 */
-	const openSecondModal = useCallback(() => {
-		createModal({
-			component: ({ close, state }) => (
-				<Modal
-					onClose={close}
-					title="Second Modal"
-					intent="success"
-					size="sm"
-					primaryAction={{
-						label: `Open Modal 3 (${state.data.counter})`,
-						onClick: () => {
-							openThirdModal();
-							close();
-						},
-						// close: true,
-					}}
-				>
-					<p>
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Quam at,
-						necessitatibus consequuntur odit quod reprehenderit placeat
-						repudiandae inventore dignissimos provident.
-					</p>
-					<p>
-						Quos quaerat culpa possimus aliquid atque assumenda aperiam velit
-						delectus, eius iure repellendus! Fugit perspiciatis assumenda sequi
-						modi eligendi deserunt?
-					</p>
-					<p>
-						Neque beatae ipsam optio accusantium similique, at quas veniam.
-						Deserunt tenetur aperiam consectetur ex molestias! Quos fugiat
-						laboriosam repellat inventore!
-					</p>
-					<p>
-						Iste, placeat pariatur provident aspernatur nostrum culpa deserunt
-						officia voluptatem repellendus labore qui dolores esse sapiente
-						cupiditate eligendi porro non?
-					</p>
-					<p>
-						Nihil, rerum voluptate odio maxime quos provident deleniti enim
-						nulla ut totam iste ea cupiditate laboriosam voluptatibus labore ex
-						at!
-					</p>
-					<p>
-						Tempora nobis vel sapiente ut voluptates ullam dignissimos itaque
-						magnam animi consequatur, odit unde voluptatum commodi officiis
-						recusandae voluptatem eligendi!
-					</p>
-					<p>
-						Reprehenderit assumenda quae, unde nulla amet eaque quas dolorum
-						nobis repellat voluptate eligendi? Quibusdam atque explicabo dicta
-						inventore quod facilis!
-					</p>
-					<p>
-						Necessitatibus, totam placeat fugiat corporis beatae unde tempore,
-						ipsa porro consequuntur ab quis ad provident in dolorum, voluptatem
-						nisi quia!
-					</p>
-					<p>
-						Atque laudantium magni ex esse natus numquam dolorem, vitae nulla
-						eligendi unde tenetur in velit consequatur aliquam ab! Quibusdam,
-						necessitatibus.
-					</p>
-					<p>
-						Enim consequatur quo labore aliquam recusandae, dicta nisi excepturi
-						fugiat incidunt. Mollitia totam ea officiis id, perferendis sint
-						consequuntur harum!
-					</p>
-				</Modal>
-			),
+	// Handle form submission
+	const handleSubmit = () => {
+		// Reset errors
+		setErrors({});
+
+		// Validate payment method
+		const paymentValidation = paymentSchema.safeParse({
+			payment: selectedPayment,
 		});
-	}, [createModal]);
+		const notificationsValidation = notificationsSchema.safeParse({
+			notifications: selectedNotifications,
+		});
 
-	/**
-	 * First modal - demonstrates dynamic title and content updates
-	 */
+		let isValid = true;
+
+		if (!paymentValidation.success) {
+			setErrors((prev) => ({
+				...prev,
+				payment: "Invalid payment method selected.",
+			}));
+			isValid = false;
+		}
+
+		if (!notificationsValidation.success) {
+			setErrors((prev) => ({
+				...prev,
+				notifications: "Invalid notification preferences selected.",
+			}));
+			isValid = false;
+		}
+
+		if (isValid) {
+			alert("Form submitted successfully!");
+		}
+	};
+
+	// Handling Checkbox change
+	const handleCheckboxChange = (value: string, checked: boolean) => {
+		if (checked) {
+			setSelectedNotifications([...selectedNotifications, value]);
+		} else {
+			setSelectedNotifications(
+				selectedNotifications.filter((v) => v !== value)
+			);
+		}
+	};
+
+	const { toast, ToastPortal } = useToast({
+		maxToasts: 8,
+		position: "top-left",
+	});
+
 	const openModal = () => {
-		createModal({
-			position: "left",
-			component: ({ close, state }) => (
+		showModal({
+			// position: "left",
+			component: ({ close }) => (
 				<Modal
 					onClose={close}
-					title={`Modal 1 - ${state.data.name}`}
+					title={"Modal 1"}
 					intent="danger"
 					size="3xl"
 					primaryAction={{
-						label: `Open Modal 2 (${state.data.counter})`,
-						onClick: openSecondModal,
+						label: "yeet",
+						onClick: () => {},
+					}}
+					secondaryAction={{
+						label: "yeet",
+						onClick: () => {},
+					}}
+					altAction={{
+						label: "yeet",
+						onClick: () => {},
 					}}
 				>
-					ID: {state.data.id}, Name: {state.data.name}, Counter value:
-					{state.data.counter}
+					yeet
 				</Modal>
 			),
-		});
-	};
-
-	/**
-	 * Third modal - demonstrates custom styling and multiple actions
-	 */
-	const openThirdModal = () => {
-		showModal({
-			component: () => (
-				<Drawer
-					title="Title" // optional
-					subTitle="subtitle" // optional
-					secondaryAction={{
-						label: "Button",
-						intent: "default",
-						variant: "solid",
-						onClick: () => console.log("Secondary Button Clicked"),
-					}}
-					primaryAction={{
-						label: "Primary Button",
-						intent: "primary",
-						variant: "solid",
-						onClick: () => console.log("Primary Button Clicked"),
-					}}
-					size="wide" // "narrow" | "medium" | "wide" | "extended" | "fullWidth"
-					onCloseDrawer={close}
-				>
-					<div className="flex flex-col gap-2">
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-					</div>
-				</Drawer>
-			),
-			position: "right",
-		});
-	};
-	const openLeftDrawer = () => {
-		showModal({
-			component: () => (
-				<Drawer
-					title="Title" // optional
-					subTitle="subtitle" // optional
-					secondaryAction={{
-						label: "Button",
-						intent: "default",
-						variant: "solid",
-						onClick: () => console.log("Secondary Button Clicked"),
-					}}
-					primaryAction={{
-						label: "Primary Button",
-						intent: "primary",
-						variant: "solid",
-						onClick: () => console.log("Primary Button Clicked"),
-					}}
-					size="wide" // "narrow" | "medium" | "wide" | "extended" | "fullWidth"
-					onCloseDrawer={close}
-				>
-					<div className="flex flex-col gap-2">
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-						<Button>Sample Button</Button>
-					</div>
-				</Drawer>
-			),
-			position: "left",
 		});
 	};
 
 	return (
-		<div className="space-y-4">
-			{/* Display current state values */}
-			<div className="text font-extrabold">
-				{data.name} (ID: {data.id}) Counter: {data.counter}
-			</div>
-			{/* Modal trigger buttons */}
-			<Button variant="solid" intent="primary" onClick={openModal}>
-				Open Modal Number 1
-			</Button>
-			<Button variant="solid" intent="success" onClick={openSecondModal}>
-				Open Modal Number 2
-			</Button>
-			<Button variant="solid" intent="success" onClick={openThirdModal}>
-				Open right drawer
-			</Button>
-			<Button variant="solid" intent="success" onClick={openLeftDrawer}>
-				Open left drawer
-			</Button>
-			<div className="text flex flex-col gap-2">
-				<span className="font-extrabold capitalize">default</span>
-				<Note
-					message="Lorem, ipsum dolor sit amet consectetur"
-					title="TITLE"
-					intent="default"
-					icon={RiInformationFill}
-					action={{
-						label: "Action Button",
-						onClick: () => {
-							openModal();
-						},
-					}}
-				/>
-				<span className="font-extrabold capitalize">danger</span>
-				<Note
-					message="Lorem, ipsum dolor sit amet consectetur"
-					title="TITLE"
-					intent="danger"
-					icon={RiInformationFill}
-					action={{
-						label: "Action Button",
-						onClick: () => {
-							openModal();
-						},
-					}}
-				/>
-				<span className="font-extrabold capitalize">success</span>
-				<Note
-					message="Lorem, ipsum dolor sit amet consectetur"
-					title="TITLE"
-					intent="success"
-					icon={RiInformationFill}
-					action={{
-						label: "Action Button",
-						onClick: () => {
-							openModal();
-						},
-					}}
-				/>
-				<span className="font-extrabold capitalize">warning</span>
-				<Note
-					message="Lorem, ipsum dolor sit amet consectetur"
-					title="TITLE"
-					intent="warning"
-					icon={RiInformationFill}
-					action={{
-						label: "Action Button",
-						onClick: () => {
-							openModal();
-						},
-					}}
-				/>
-				<span className="font-extrabold capitalize">info</span>
-				<Note
-					message="Lorem, ipsum dolor sit amet consectetur"
-					title="TITLE"
-					intent="info"
-					icon={RiInformationFill}
-					action={{
-						label: "Action Button",
-						onClick: () => {
-							openModal();
-						},
-					}}
-				/>
-			</div>
-
-			<div className="text flex flex-col gap-3 py-10">
-				<StatCard
-					title="Stat Card Title"
-					icon={MdOutlineBarChart}
-					data={`${data.counter}`}
-					badge={{ label: "70%", intent: "success", trend: "up" }}
-					action={{ label: "Action", onClick: () => {} }}
-				/>
-				<StatCard
-					title="Stat Card Title"
-					icon={MdOutlineBarChart}
-					data={`${data.counter}`}
-				/>
-				<StatCard title="Stat Card Title" data={`${data.counter}`} />
-				<StatCard
-					title="Stat Card Title"
-					icon={MdOutlineMultilineChart}
-					data={`${data.counter}`}
-					badge={{ label: "20%", intent: "danger", trend: "down" }}
-					action={{ label: "Action", onClick: () => {} }}
+		<div className="w-full">
+			<div className="grid w-full place-items-center py-40">
+				{/* <Tooltip
+					content={
+						<div className="max-w-40">
+							Lorem ipsum dolor sit amet consectetur adipisicing elit.
+							Consequatur ex numquam corrupti ipsum debitis laudantium! Mollitia
+							quo eligendi assumenda ut.
+						</div>
+					}
+					position="top"
+					offset="end"
+					dismissible
+					// title="Tooltip Title"
 				>
-					<ResponsiveContainer width="100%" height={100}>
-						<AreaChart data={chartData}>
-							<XAxis dataKey="name" hide />
-							<YAxis hide />
-							<Tooltip />
-							<Area
-								type="monotone"
-								dataKey="value"
-								stroke="#8884d8"
-								fill="#8884d8"
-								strokeWidth={2}
+					<button
+						type="button"
+						className="mx-auto rounded bg-green-500 px-4 py-2 text-white"
+					>
+						Hover or Click Me
+					</button>
+				</Tooltip> */}
+
+				<Tooltip dismissible>
+					<Tooltip.Target>
+						<button
+							type="button"
+							className="mx-auto rounded bg-green-500 px-4 py-2 text-white"
+						>
+							Hover or Click Me
+						</button>
+					</Tooltip.Target>
+					<Tooltip.Content position="right" offset="end">
+						<Tooltip.Title>Optional Title</Tooltip.Title>
+						Content goes here
+					</Tooltip.Content>
+				</Tooltip>
+			</div>
+			<div className="flex flex-col space-y-4">
+				{/* Single selection */}
+				<div>
+					<h2 className="text mb-4 font-semibold text-xl">
+						Select Payment Method
+					</h2>
+					<FormRadio
+						name="yeet"
+						label="yeet"
+						value={selectedPayment}
+						onChange={(value) => setSelectedPayment(value as string)}
+					>
+						{[
+							...paymentMethods.map((method) => (
+								<Radio.Item
+									key={method.value}
+									label={method.label}
+									value={method.value}
+									description={method.description}
+									icon={method.icon}
+								/>
+							)),
+							<Radio.Item
+								key="yeet"
+								label="yeet"
+								value="yeet"
+								description="yeet"
+								// icon={FaChessBishop} // Uncomment if needed
+							/>,
+						]}
+					</FormRadio>
+
+					{errors.payment && (
+						<p className="mt-2 text-red-500">{errors.payment}</p>
+					)}
+
+					<div className="text mt-4 rounded bg-gray-100 p-4 ">
+						<p>
+							Selected payment method: <strong>{selectedPayment}</strong>
+						</p>
+					</div>
+				</div>
+				{/* Multiple Selection for notifications */}
+				<div>
+					<h2 className="text mb-4 font-semibold text-xl">
+						Choose Notification Preferences
+					</h2>
+					<div className="flex flex-col space-y-2">
+						{notificationPreferences.map((notification) => (
+							<Checkbox
+								key={notification.value}
+								label={notification.label}
+								checked={selectedNotifications.includes(notification.value)}
+								onChange={(checked) =>
+									handleCheckboxChange(notification.value, checked)
+								}
+								description={notification.description}
+								icon={notification.icon}
 							/>
-						</AreaChart>
-					</ResponsiveContainer>
-				</StatCard>
+						))}
+
+						<Checkbox
+							key={"yeet"}
+							label={"yeet"}
+							checked={selectedNotifications.includes("yeet")}
+							onChange={(checked) => handleCheckboxChange("yeet", checked)}
+							description={"yeet"}
+						/>
+					</div>
+
+					{errors.notifications && (
+						<p className="mt-2 text-red-500">{errors.notifications}</p>
+					)}
+
+					<div className="text mt-4 rounded bg-gray-100 p-4">
+						<p>Selected notification methods:</p>
+						<ul className="mt-2 ml-4 list-disc">
+							{selectedNotifications.map((method) => (
+								<li key={method}>{method}</li>
+							))}
+						</ul>
+					</div>
+				</div>
+				{/* Submit Button */}
+				<button
+					type="button"
+					className="mt-4 rounded bg-blue-500 px-4 py-2 text-white"
+					onClick={openModal}
+				>
+					open modal
+				</button>
+				<Button variant="solid" onClick={() => toast("title")}>
+					open toast via string
+				</Button>
+				<Button
+					variant="solid"
+					onClick={() =>
+						toast({
+							message: "yeet",
+							title: "yeet",
+							filled: true,
+							intent: "success",
+							action: { label: "yeet", onClick: () => {} },
+							duration: 5_000,
+							position: "top-center",
+						})
+					}
+				>
+					open success toast
+				</Button>{" "}
+				<Button
+					variant="solid"
+					onClick={() =>
+						toast({
+							message: "yeet",
+							title: "yeet",
+							filled: true,
+							intent: "danger",
+							action: { label: "yeet", onClick: () => {} },
+							duration: 5_000,
+							position: "top-center",
+						})
+					}
+				>
+					open danger toast
+				</Button>{" "}
+				<Button
+					variant="solid"
+					onClick={() =>
+						toast({
+							// message: "yeet",
+							title: "yeet",
+							filled: true,
+							duration: 0,
+							position: "bottom-center",
+							size: "xs",
+						})
+					}
+				>
+					open default toast
+				</Button>
+				<Button
+					variant="solid"
+					onClick={() => {
+						const toasts = [
+							{
+								message: "Success Toast",
+								title: "Success Toast Message",
+								duration: 10_000,
+								filled: true,
+								intent: "success",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Danger Toast",
+								title: "Danger Toast Message",
+								duration: 10_000,
+								filled: true,
+								intent: "danger",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Warning Toast",
+								title: "Warning Toast Message",
+								duration: 10_000,
+								filled: true,
+								intent: "warning",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Default Toast",
+								title: "Default Toast Message",
+								duration: 10_000,
+								filled: true,
+								intent: "default",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Success Toast",
+								title: "Success Toast Message",
+								duration: 10_000,
+								intent: "success",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Danger Toast",
+								title: "Danger Toast Message",
+								duration: 10_000,
+								intent: "danger",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Warning Toast",
+								title: "Warning Toast Message",
+								duration: 10_000,
+								intent: "warning",
+								action: { label: "Button", onClick: () => {} },
+							},
+							{
+								message: "Default Toast",
+								title: "Default Toast Message",
+								duration: 10_000,
+								intent: "default",
+								action: { label: "Button", onClick: () => {} },
+							},
+						];
+
+						toasts.forEach((toastInput, index) => {
+							setTimeout(() => {
+								toast(toastInput);
+							}, index * 300); // Delay of 300ms per toast
+						});
+					}}
+				>
+					open toast all toasts
+				</Button>
+				{ToastPortal && <ToastPortal />}
+				<Card
+					// primaryAction={{
+					// 	label: "primary button",
+					// 	onClick: () => {},
+					// }}
+					// secondaryAction={{
+					// 	label: "secondary button",
+					// 	onClick: () => {},
+					// }}
+					// headerAction={{
+					// 	label: "yeet",
+					// 	onClick: () => {},
+					// }}
+					title="yeet"
+					description="yeet"
+					size="2xl"
+				>
+					<div className="w-full">yeet</div>
+				</Card>
 			</div>
 		</div>
 	);
 }
 
-/**
- * Main Playground component
- * Note: This component should be wrapped with ModalProvider in the parent component
- * Example:
- * <ModalProvider>
- *   <Playground />
- * </ModalProvider>
- */
 export default function Playground() {
 	return <PlaygroundContent />;
 }
